@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(COOKIE_NAME, makeToken(), {
+  res.cookies.set(COOKIE_NAME, await makeToken(), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
