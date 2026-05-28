@@ -21,6 +21,7 @@ export default function HomePage() {
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<string>("");
 
   async function search(q: string) {
     setLoading(true);
@@ -51,8 +52,19 @@ export default function HomePage() {
 
   async function sync() {
     setSyncing(true);
-    await fetch("/api/sync", { method: "POST" });
-    await search(query);
+    setSyncMsg("");
+    try {
+      const res = await fetch("/api/sync", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setSyncMsg(`Erro ${res.status}: ${data.error || "desconhecido"}${data.detail ? " — " + data.detail : ""}`);
+      } else {
+        setSyncMsg(`OK — ${data.indexed} vídeo(s) indexado(s) de ${data.total} objeto(s) no bucket.`);
+      }
+      await search(query);
+    } catch (e: any) {
+      setSyncMsg(`Falha: ${e.message}`);
+    }
     setSyncing(false);
   }
 
@@ -76,6 +88,21 @@ export default function HomePage() {
           {syncing ? "Sincronizando..." : "Sincronizar B2"}
         </button>
       </header>
+      {syncMsg && (
+        <div
+          style={{
+            padding: "10px 14px",
+            background: syncMsg.startsWith("OK") ? "#163a25" : "#3a1616",
+            border: "1px solid #2a3340",
+            borderRadius: 6,
+            marginBottom: 12,
+            fontSize: 13,
+            fontFamily: "monospace",
+          }}
+        >
+          {syncMsg}
+        </div>
+      )}
 
       <input
         autoFocus

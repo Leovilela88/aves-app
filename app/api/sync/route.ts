@@ -8,12 +8,20 @@ export const maxDuration = 300;
 const VIDEO_EXT = /\.(mp4|mov|m4v|webm)$/i;
 
 export async function POST() {
-  const objects = await listAllObjects();
-  let count = 0;
-  for (const obj of objects) {
-    if (!VIDEO_EXT.test(obj.key)) continue;
-    upsertVideo(obj.key, obj.size);
-    count++;
+  try {
+    const objects = await listAllObjects();
+    let count = 0;
+    for (const obj of objects) {
+      if (!VIDEO_EXT.test(obj.key)) continue;
+      upsertVideo(obj.key, obj.size);
+      count++;
+    }
+    return NextResponse.json({ ok: true, indexed: count, total: objects.length });
+  } catch (e: any) {
+    console.error("sync error", e);
+    return NextResponse.json(
+      { error: e?.name || "SyncError", detail: e?.message || String(e) },
+      { status: 500 }
+    );
   }
-  return NextResponse.json({ ok: true, indexed: count, total: objects.length });
 }
