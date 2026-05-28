@@ -248,6 +248,9 @@ export default function HomePage() {
               src={streamUrl}
               controls
               autoPlay
+              playsInline
+              // @ts-ignore — atributo iOS legado, ainda útil pra Safari antigo
+              webkit-playsinline="true"
               style={{
                 width: "100%",
                 maxHeight: "65vh",
