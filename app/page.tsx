@@ -14,6 +14,10 @@ function formatSize(bytes: number) {
   return `${(mb / 1024).toFixed(2)} GB`;
 }
 
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export default function HomePage() {
   const [query, setQuery] = useState("");
   const [videos, setVideos] = useState<Video[]>([]);
@@ -59,7 +63,7 @@ export default function HomePage() {
       if (!res.ok) {
         setSyncMsg(`Erro ${res.status}: ${data.error || "desconhecido"}${data.detail ? " — " + data.detail : ""}`);
       } else {
-        setSyncMsg(`OK — ${data.indexed} vídeo(s) indexado(s) de ${data.total} objeto(s) no bucket.`);
+        setSyncMsg(`${data.indexed} vídeo(s) indexado(s) de ${data.total} objeto(s) no bucket.`);
       }
       await search(query);
     } catch (e: any) {
@@ -69,86 +73,155 @@ export default function HomePage() {
   }
 
   return (
-    <main style={{ maxWidth: 1100, margin: "0 auto", padding: 24 }}>
-      <header style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, margin: 0, flex: 1 }}>Acervo de aves</h1>
+    <main style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 24px 60px" }}>
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          marginBottom: 28,
+          paddingBottom: 20,
+          borderBottom: "1px solid rgba(74, 157, 108, 0.15)",
+        }}
+      >
+        <div style={{ flex: 1, display: "flex", alignItems: "baseline", gap: 12 }}>
+          <span style={{ fontSize: 26 }}>🪶</span>
+          <h1
+            style={{
+              fontSize: 24,
+              margin: 0,
+              fontWeight: 600,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Acervo de Aves
+          </h1>
+          <span style={{ color: "#5a6a60", fontSize: 13 }}>
+            {videos.length > 0 && `${videos.length} vídeo${videos.length > 1 ? "s" : ""}`}
+          </span>
+        </div>
         <button
           onClick={sync}
           disabled={syncing}
           style={{
-            padding: "8px 14px",
-            background: "#1a2129",
-            border: "1px solid #2a3340",
-            color: "#bdd",
-            borderRadius: 6,
+            padding: "9px 16px",
+            background: "rgba(74, 157, 108, 0.12)",
+            border: "1px solid rgba(74, 157, 108, 0.35)",
+            color: "#9bd4b0",
+            borderRadius: 8,
             cursor: "pointer",
             fontSize: 13,
+            fontWeight: 500,
           }}
         >
-          {syncing ? "Sincronizando..." : "Sincronizar B2"}
+          {syncing ? "Sincronizando..." : "↻ Sincronizar B2"}
         </button>
       </header>
+
       {syncMsg && (
         <div
           style={{
-            padding: "10px 14px",
-            background: syncMsg.startsWith("OK") ? "#163a25" : "#3a1616",
-            border: "1px solid #2a3340",
-            borderRadius: 6,
-            marginBottom: 12,
+            padding: "12px 16px",
+            background: syncMsg.startsWith("Erro") || syncMsg.startsWith("Falha")
+              ? "rgba(120, 30, 30, 0.3)"
+              : "rgba(47, 125, 79, 0.18)",
+            border: `1px solid ${
+              syncMsg.startsWith("Erro") || syncMsg.startsWith("Falha")
+                ? "rgba(220, 80, 80, 0.4)"
+                : "rgba(74, 157, 108, 0.4)"
+            }`,
+            borderRadius: 8,
+            marginBottom: 18,
             fontSize: 13,
-            fontFamily: "monospace",
+            fontFamily: "ui-monospace, monospace",
           }}
         >
           {syncMsg}
         </div>
       )}
 
-      <input
-        autoFocus
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Buscar por espécie (nome científico)..."
-        style={{
-          width: "100%",
-          padding: "12px 14px",
-          background: "#1a2129",
-          border: "1px solid #2a3340",
-          color: "#fff",
-          borderRadius: 8,
-          fontSize: 15,
-          marginBottom: 16,
-        }}
-      />
+      <div style={{ position: "relative", marginBottom: 24 }}>
+        <input
+          autoFocus
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar por espécie (nome científico)..."
+          style={{
+            width: "100%",
+            padding: "14px 18px 14px 44px",
+            background: "rgba(15, 22, 19, 0.7)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid #2a3a32",
+            color: "#fff",
+            borderRadius: 10,
+            fontSize: 15,
+          }}
+        />
+        <span
+          style={{
+            position: "absolute",
+            left: 16,
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "#5a6a60",
+            fontSize: 16,
+          }}
+        >
+          🔍
+        </span>
+      </div>
 
       {selected && (
         <div
           style={{
-            background: "#0a0d11",
-            border: "1px solid #2a3340",
-            borderRadius: 8,
-            padding: 16,
-            marginBottom: 20,
+            background: "rgba(8, 12, 10, 0.85)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(74, 157, 108, 0.25)",
+            borderRadius: 12,
+            padding: 18,
+            marginBottom: 24,
+            boxShadow: "0 10px 40px rgba(0,0,0,0.4)",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 14,
+            }}
+          >
             <div>
-              <div style={{ fontStyle: "italic", fontSize: 16 }}>{selected.species}</div>
-              <div style={{ fontSize: 12, color: "#7a8a99" }}>{selected.filename}</div>
+              <div
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontStyle: "italic",
+                  fontSize: 22,
+                  fontWeight: 600,
+                  color: "#e8eef2",
+                }}
+              >
+                {capitalize(selected.species)}
+              </div>
+              <div style={{ fontSize: 12, color: "#7a8a80", marginTop: 2 }}>
+                {selected.filename} · {formatSize(selected.size)}
+              </div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button
                 onClick={() => download(selected)}
                 style={{
-                  padding: "8px 14px",
-                  background: "#2f7d4f",
+                  padding: "9px 18px",
+                  background: "linear-gradient(180deg, #4a9d6c, #2f7d4f)",
                   border: 0,
                   color: "#fff",
-                  borderRadius: 6,
+                  borderRadius: 8,
                   cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 600,
                 }}
               >
-                Baixar
+                ↓ Baixar
               </button>
               <button
                 onClick={() => {
@@ -156,12 +229,13 @@ export default function HomePage() {
                   setStreamUrl(null);
                 }}
                 style={{
-                  padding: "8px 14px",
+                  padding: "9px 14px",
                   background: "transparent",
-                  border: "1px solid #2a3340",
-                  color: "#bdd",
-                  borderRadius: 6,
+                  border: "1px solid #2a3a32",
+                  color: "#9aa9a0",
+                  borderRadius: 8,
                   cursor: "pointer",
+                  fontSize: 13,
                 }}
               >
                 Fechar
@@ -174,46 +248,110 @@ export default function HomePage() {
               src={streamUrl}
               controls
               autoPlay
-              style={{ width: "100%", maxHeight: "60vh", background: "#000", borderRadius: 6 }}
+              style={{
+                width: "100%",
+                maxHeight: "65vh",
+                background: "#000",
+                borderRadius: 8,
+                display: "block",
+              }}
             />
           ) : (
-            <div style={{ padding: 40, textAlign: "center", color: "#7a8a99" }}>Carregando...</div>
+            <div
+              style={{
+                padding: 60,
+                textAlign: "center",
+                color: "#7a8a80",
+                background: "#000",
+                borderRadius: 8,
+              }}
+            >
+              Carregando vídeo...
+            </div>
           )}
         </div>
       )}
 
       {loading ? (
-        <p style={{ color: "#7a8a99" }}>Carregando...</p>
+        <p style={{ color: "#7a8a80", textAlign: "center", padding: 40 }}>Carregando...</p>
       ) : videos.length === 0 ? (
-        <p style={{ color: "#7a8a99" }}>
-          Nenhum vídeo encontrado. Clique em "Sincronizar B2" pra indexar o bucket.
-        </p>
+        <div
+          style={{
+            textAlign: "center",
+            padding: 60,
+            color: "#7a8a80",
+            background: "rgba(15, 22, 19, 0.5)",
+            border: "1px dashed #2a3a32",
+            borderRadius: 12,
+          }}
+        >
+          <div style={{ fontSize: 38, marginBottom: 10, opacity: 0.5 }}>🐦</div>
+          <p style={{ margin: 0 }}>
+            Nenhum vídeo encontrado. Clique em <strong>"Sincronizar B2"</strong> pra indexar o bucket.
+          </p>
+        </div>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gap: 12,
+          }}
+        >
           {videos.map((v) => (
-            <li
+            <div
               key={v.key}
+              className="video-card"
               onClick={() => openPlayer(v)}
               style={{
-                padding: "12px 14px",
-                background: selected?.key === v.key ? "#1f2933" : "#141a21",
-                border: "1px solid #2a3340",
-                borderRadius: 6,
-                marginBottom: 6,
+                padding: 16,
+                background:
+                  selected?.key === v.key
+                    ? "rgba(74, 157, 108, 0.15)"
+                    : "rgba(15, 22, 19, 0.7)",
+                backdropFilter: "blur(8px)",
+                border: `1px solid ${
+                  selected?.key === v.key ? "rgba(74, 157, 108, 0.5)" : "#2a3a32"
+                }`,
+                borderRadius: 10,
                 cursor: "pointer",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
               }}
             >
-              <div>
-                <div style={{ fontStyle: "italic" }}>{v.species}</div>
-                <div style={{ fontSize: 12, color: "#7a8a99" }}>{v.filename}</div>
+              <div
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontStyle: "italic",
+                  fontSize: 19,
+                  fontWeight: 600,
+                  color: "#e8eef2",
+                  marginBottom: 4,
+                }}
+              >
+                {capitalize(v.species)}
               </div>
-              <div style={{ fontSize: 12, color: "#7a8a99" }}>{formatSize(v.size)}</div>
-            </li>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#7a8a80",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {v.filename}
+                </span>
+                <span style={{ flexShrink: 0 }}>{formatSize(v.size)}</span>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </main>
   );
